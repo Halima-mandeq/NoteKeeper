@@ -6,13 +6,14 @@ import 'package:gap/gap.dart';
 
 import 'package:get/get.dart';
 import 'package:note_keeper/app/components/error_message.dart';
-import 'package:note_keeper/app/components/notes_Card.dart';
+import 'package:note_keeper/app/components/notes_card.dart';
 import 'package:note_keeper/app/components/search_text_feild.dart';
+import 'package:note_keeper/app/modules/user/controllers/user_controller.dart';
+import 'package:note_keeper/app/routes/app_pages.dart';
 import 'package:note_keeper/app/utils/events/user_events.dart';
 
-import '../../../components/summer_Card.dart';
+import '../../../components/summer_card.dart';
 import '../../../utils/exports.dart';
-import '../../user/controllers/user_controller.dart';
 import '../controllers/home_controller.dart';
 import '../model/notes_model.dart';
 
@@ -72,7 +73,7 @@ class _HomeViewState extends State<HomeView> with AfterLayoutMixin<HomeView> {
               child: IconButton(
                 tooltip: 'Refresh notes',
                 color: NAppColor.kSecondColor,
-                onPressed: () {},
+                onPressed: refreshNotes,
                 icon: const Icon(Icons.refresh_rounded),
               ),
             ),
@@ -85,18 +86,7 @@ class _HomeViewState extends State<HomeView> with AfterLayoutMixin<HomeView> {
               child: IconButton(
                 tooltip: 'Logout',
                 color: Colors.white,
-                onPressed: () {
-                  // final user = Get.find<UserController>();
-                  // user.logout(
-                  //   onSuccess: () {
-                  //     Navigator.pushNamedAndRemoveUntil(
-                  //       context,
-                  //       Routes.USER,
-                  //       (route) => false,
-                  //     );
-                  //   },
-                  // );
-                },
+                onPressed: _confirmLogout,
                 icon: const Icon(Icons.logout_rounded),
               ),
             ),
@@ -108,16 +98,7 @@ class _HomeViewState extends State<HomeView> with AfterLayoutMixin<HomeView> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           elevation: 0,
           onPressed: () async {
-            // final created = await Navigator.push<bool>(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (_) => const CreateNewNoteOrEditNote(),
-            //   ),
-            // );
-
-            // if (created == true) {
-            //   getNoteStatistics();
-            // }
+            await _showCreateNoteDialog();
           },
           child: const Icon(Icons.add_rounded),
         ),
@@ -128,10 +109,7 @@ class _HomeViewState extends State<HomeView> with AfterLayoutMixin<HomeView> {
 
               return RefreshIndicator(
                 color: NAppColor.kPrimaryColor,
-                onRefresh: () {
-                  // return getAllNotes();
-                  return Future.delayed(const Duration(seconds: 1));
-                },
+                onRefresh: refreshNotes,
                 child: CustomScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
@@ -157,7 +135,7 @@ class _HomeViewState extends State<HomeView> with AfterLayoutMixin<HomeView> {
                                         child: SummaryCard(
                                           title: 'Total Notes',
                                           value:
-                                              '${controller.statistcs.totalNotes}',
+                                              '${controller.statistcs.totalNotes ?? 0}',
                                           icon: Icons.sticky_note_2_rounded,
                                           color: NAppColor.kPrimaryColor,
                                         ),
@@ -167,7 +145,7 @@ class _HomeViewState extends State<HomeView> with AfterLayoutMixin<HomeView> {
                                         child: SummaryCard(
                                           title: 'Pinned',
                                           value:
-                                              '${controller.statistcs.pinnedNotes}',
+                                              '${controller.statistcs.pinnedNotes ?? 0}',
                                           icon: Icons.push_pin_rounded,
                                           color: const Color(0xff16a085),
                                         ),
@@ -178,7 +156,7 @@ class _HomeViewState extends State<HomeView> with AfterLayoutMixin<HomeView> {
                                   SummaryCard(
                                     title: 'UnPinned',
                                     value:
-                                        '${controller.statistcs.unpinnedNotes}',
+                                        '${controller.statistcs.unpinnedNotes ?? 0}',
                                     icon: Icons.push_pin_rounded,
                                     color: const Color(0xff16a085),
                                   ),
@@ -200,7 +178,7 @@ class _HomeViewState extends State<HomeView> with AfterLayoutMixin<HomeView> {
                                     ),
                                   ),
                                   Text(
-                                    ' shown',
+                                    '$visibleCount shown',
                                     style: style(
                                       fontSize: NSizes.fontSizeSm,
                                       color: NAppColor.kTextStyleColorGray,
@@ -262,27 +240,25 @@ class _HomeViewState extends State<HomeView> with AfterLayoutMixin<HomeView> {
                                             final notes = visibleNotes[index];
                                             return GestureDetector(
                                               onTap: () async {
-                                                // final updated =
-                                                //     await Navigator.push<bool>(
-                                                //       context,
-                                                //       MaterialPageRoute(
-                                                //         builder: (_) =>
-                                                //             CreateNewNoteOrEditNote(
-                                                //               note: notes,
-                                                //             ),
-                                                //       ),
-                                                //     );
-
-                                                // if (updated == true) {
-                                                //   getAllNotes();
-                                                //   getNoteStatistics();
-                                                // }
+                                                await _showNoteDialog(
+                                                  note: notes,
+                                                );
                                               },
                                               child: NoteCard(
                                                 note: notes,
                                                 accentColor:
                                                     noteColors[index %
                                                         noteColors.length],
+                                                onEdit: () async {
+                                                  await _showNoteDialog(
+                                                    note: notes,
+                                                  );
+                                                },
+                                                onDelete: () async {
+                                                  await _confirmDeleteNote(
+                                                    notes,
+                                                  );
+                                                },
                                               ),
                                             );
                                           },
@@ -354,10 +330,393 @@ class _HomeViewState extends State<HomeView> with AfterLayoutMixin<HomeView> {
     );
   }
 
+  Future<void> refreshNotes() async {
+    await Future.wait([getAllNotes(), getNoteStatistics()]);
+  }
+
+  Future<void> _confirmLogout() async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: NAppColor.kbgColor2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(NSizes.cardRadiusMd),
+          ),
+          title: Text(
+            'Logout',
+            style: style(
+              fontSize: NSizes.fontSizeLg,
+              color: NAppColor.kTextStyleColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to logout?',
+            style: style(
+              fontSize: NSizes.fontSizeMd,
+              color: NAppColor.kSecondColor.withValues(alpha: 0.72),
+              height: 1.45,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                'No',
+                style: style(
+                  fontSize: NSizes.fontSizeMd,
+                  color: NAppColor.kTextStyleColorGray,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: NAppColor.kPrimaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              icon: const Icon(Icons.logout_rounded),
+              label: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldLogout != true || !mounted) return;
+
+    final user = Get.find<UserController>();
+    await user.logout(
+      onSuccess: () {
+        Get.offAllNamed(Routes.USER);
+      },
+    );
+  }
+
+  Future<void> _showCreateNoteDialog() async {
+    await _showNoteDialog();
+  }
+
+  Future<void> _confirmDeleteNote(NotesModel note) async {
+    final id = note.id;
+    if (id == null) {
+      showToast(message: 'Note id is missing');
+      return;
+    }
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: NAppColor.kbgColor2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(NSizes.cardRadiusMd),
+          ),
+          title: Text(
+            'Delete Note',
+            style: style(
+              fontSize: NSizes.fontSizeLg,
+              color: NAppColor.kTextStyleColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Text(
+            'Delete "${note.title ?? 'this note'}"?',
+            style: style(
+              fontSize: NSizes.fontSizeMd,
+              color: NAppColor.kSecondColor.withValues(alpha: 0.72),
+              height: 1.45,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                'Cancel',
+                style: style(
+                  fontSize: NSizes.fontSizeMd,
+                  color: NAppColor.kTextStyleColorGray,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: NAppColor.kCheckOutActiveTextColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              icon: const Icon(Icons.delete_rounded),
+              label: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true || !mounted) return;
+
+    final controller = Get.find<HomeController>();
+    await controller.deleteExistingNote(
+      id: id,
+      onSuccess: () async {
+        if (!mounted) return;
+        showToast(message: 'Note deleted');
+        await refreshNotes();
+      },
+      onError: (error) {
+        showToast(message: error);
+      },
+    );
+  }
+
+  Future<void> _showNoteDialog({NotesModel? note}) async {
+    final isEditing = note != null;
+    final formKey = GlobalKey<FormState>();
+    final titleController = TextEditingController(text: note?.title ?? '');
+    final contentController = TextEditingController(text: note?.content ?? '');
+    final tagsController = TextEditingController(
+      text: (note?.tags ?? []).join(', '),
+    );
+    bool isPinned = note?.isPinned ?? false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: NAppColor.kbgColor2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(NSizes.cardRadiusMd),
+              ),
+              title: Text(
+                isEditing ? 'Edit Note' : 'New Note',
+                style: style(
+                  fontSize: NSizes.fontSizeLg,
+                  color: NAppColor.kTextStyleColor,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              content: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: titleController,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          labelText: 'Title',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Title is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const Gap(NSizes.md),
+                      TextFormField(
+                        controller: contentController,
+                        minLines: 4,
+                        maxLines: 6,
+                        decoration: const InputDecoration(
+                          labelText: 'Content',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Content is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const Gap(NSizes.md),
+                      TextFormField(
+                        controller: tagsController,
+                        textInputAction: TextInputAction.done,
+                        decoration: const InputDecoration(
+                          labelText: 'Tags',
+                          hintText: 'work, ideas',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const Gap(NSizes.sm),
+                      SwitchListTile.adaptive(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          'Pinned',
+                          style: style(
+                            fontSize: NSizes.fontSizeMd,
+                            color: NAppColor.kTextStyleColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        value: isPinned,
+                        activeThumbColor: NAppColor.kPrimaryColor,
+                        onChanged: (value) {
+                          setDialogState(() => isPinned = value);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                if (isEditing)
+                  GetBuilder<HomeController>(
+                    builder: (controller) {
+                      final deleting =
+                          controller.noteDelete == DeleteNote.loading;
+
+                      return IconButton(
+                        tooltip: 'Delete note',
+                        color: Colors.red,
+                        onPressed: deleting
+                            ? null
+                            : () async {
+                                final id = note.id;
+                                if (id == null) {
+                                  showToast(message: 'Note id is missing');
+                                  return;
+                                }
+
+                                await controller.deleteExistingNote(
+                                  id: id,
+                                  onSuccess: () async {
+                                    if (!mounted) return;
+                                    Navigator.pop(context);
+                                    showToast(message: 'Note deleted');
+                                    await refreshNotes();
+                                  },
+                                  onError: (error) {
+                                    showToast(message: error);
+                                  },
+                                );
+                              },
+                        icon: deleting
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.delete_rounded),
+                      );
+                    },
+                  ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Cancel',
+                    style: style(
+                      fontSize: NSizes.fontSizeMd,
+                      color: NAppColor.kTextStyleColorGray,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                GetBuilder<HomeController>(
+                  builder: (controller) {
+                    final loading = isEditing
+                        ? controller.noteUpdate == UpdateNote.loading
+                        : controller.createNote == CreateNewNote.loading;
+
+                    return FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: NAppColor.kPrimaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: loading
+                          ? null
+                          : () async {
+                              if (!formKey.currentState!.validate()) return;
+
+                              final tags = tagsController.text
+                                  .split(',')
+                                  .map((tag) => tag.trim())
+                                  .where((tag) => tag.isNotEmpty)
+                                  .toList();
+
+                              if (isEditing) {
+                                final id = note.id;
+                                if (id == null) {
+                                  showToast(message: 'Note id is missing');
+                                  return;
+                                }
+
+                                await controller.updateExistingNote(
+                                  id: id,
+                                  title: titleController.text.trim(),
+                                  content: contentController.text.trim(),
+                                  tags: tags,
+                                  isPinned: isPinned,
+                                  onSuccess: (_) async {
+                                    if (!mounted) return;
+                                    Navigator.pop(context);
+                                    showToast(message: 'Note updated');
+                                    await refreshNotes();
+                                  },
+                                  onError: (error) {
+                                    showToast(message: error);
+                                  },
+                                );
+                              } else {
+                                await controller.createNewNote(
+                                  title: titleController.text.trim(),
+                                  content: contentController.text.trim(),
+                                  tags: tags,
+                                  isPinned: isPinned,
+                                  onSuccess: (_) async {
+                                    if (!mounted) return;
+                                    Navigator.pop(context);
+                                    showToast(message: 'Note saved');
+                                    await refreshNotes();
+                                  },
+                                  onError: (error) {
+                                    showToast(message: error);
+                                  },
+                                );
+                              }
+                            },
+                      icon: loading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.save_rounded),
+                      label: Text(isEditing ? 'Update' : 'Save'),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    titleController.dispose();
+    contentController.dispose();
+    tagsController.dispose();
+  }
+
   @override
   FutureOr<void> afterFirstLayout(BuildContext context) {
-    getAllNotes();
-    getNoteStatistics();
+    refreshNotes();
   }
 
   @override

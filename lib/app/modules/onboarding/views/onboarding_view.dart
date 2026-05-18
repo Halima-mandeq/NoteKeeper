@@ -87,8 +87,9 @@ class OnboardingView extends GetView<OnboardingController> {
                                   textAlign: TextAlign.center,
                                   style: style(
                                     fontSize: 14,
-                                    color: NAppColor.kTextStyleColor
-                                        .withOpacity(0.65),
+                                    color: NAppColor.kTextStyleColor.withValues(
+                                      alpha: 0.65,
+                                    ),
                                   ),
                                 ),
                               ),

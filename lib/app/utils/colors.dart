@@ -19,7 +19,7 @@ class NAppColor {
   static const Color borderSecondary = Color(0xFFE6E6E6);
 
   // Button colors
-  static const Color buttonPrimary = const Color(0xffff7d27);
+  static const Color buttonPrimary = Color(0xffff7d27);
   static const Color buttonSecondary = Color(0xFF200d00);
   static const Color buttonDisabled = Color(0xFFC4C4C4);
 

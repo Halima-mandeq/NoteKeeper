@@ -19,7 +19,7 @@ class GetStartBtn extends StatefulWidget {
 class _GetStartBtnState extends State<GetStartBtn> {
   bool isLoading = false;
   final box = GetStorage();
-  loadingHandler() {
+  void loadingHandler() {
     box.write(kOnboarding, true);
 
     log("The Value of onboarding is ${box.read(kOnboarding)}");

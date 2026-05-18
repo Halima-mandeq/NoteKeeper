@@ -9,7 +9,8 @@ class CustomTextFeilds extends StatelessWidget {
   final IconData? iconData;
   final IconData? passIcon;
   final void Function()? onTap;
-  final bool showPassowrd;
+  final bool showPassword;
+  final void Function()? onPasswordVisibilityToggle;
   final TextEditingController controller;
   final bool isEmail;
   final bool ispassword;
@@ -27,7 +28,8 @@ class CustomTextFeilds extends StatelessWidget {
     this.iconData,
     this.passIcon,
     this.onTap,
-    required this.showPassowrd,
+    this.showPassword = false,
+    this.onPasswordVisibilityToggle,
     required this.controller,
     this.isEmail = false,
     this.ispassword = false,
@@ -45,16 +47,17 @@ class CustomTextFeilds extends StatelessWidget {
     return GetBuilder<UserController>(
       builder: (e) {
         return TextFormField(
-          scrollPadding: EdgeInsets.all(0),
+          scrollPadding: const EdgeInsets.all(0),
           readOnly: readOnly,
-          keyboardType: keyboardType,
-          // lets make first latter capital
+          keyboardType:
+              keyboardType ??
+              (ispassword ? TextInputType.visiblePassword : null),
           textCapitalization: textCapitalization,
           textInputAction: textInputAction ?? TextInputAction.next,
           obscuringCharacter: '*',
           controller: controller,
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          obscureText: showPassowrd,
+          obscureText: ispassword && !showPassword,
           onChanged: onChanged,
           validator: (value) {
             if (value!.isEmpty || value == '') {
@@ -83,7 +86,7 @@ class CustomTextFeilds extends StatelessWidget {
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
               borderSide: BorderSide(
-                color: NAppColor.kSecondColor.withOpacity(0.3),
+                color: NAppColor.kSecondColor.withValues(alpha: 0.3),
                 width: 2,
               ),
             ),
@@ -91,8 +94,8 @@ class CustomTextFeilds extends StatelessWidget {
             hintStyle: style(
               fontSize: 14,
               color: Get.isDarkMode
-                  ? Colors.grey.shade300.withOpacity(0.6)
-                  : NAppColor.kTextStyleColor.withOpacity(0.6),
+                  ? Colors.grey.shade300.withValues(alpha: 0.6)
+                  : NAppColor.kTextStyleColor.withValues(alpha: 0.6),
             ),
 
             // ✅ Conditional prefix (for phone input)
@@ -129,10 +132,16 @@ class CustomTextFeilds extends StatelessWidget {
 
             // ✅ Password toggle (if needed)
             suffixIcon: ispassword
-                ? GestureDetector(
-                    onTap: onTap,
-                    child: Icon(
-                      passIcon,
+                ? IconButton(
+                    onPressed: onPasswordVisibilityToggle,
+                    tooltip: showPassword
+                        ? 'Hide password'
+                        : 'Show password',
+                    icon: Icon(
+                      passIcon ??
+                          (showPassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined),
                       size: 24,
                       color: NAppColor.kTextStyleColor,
                     ),

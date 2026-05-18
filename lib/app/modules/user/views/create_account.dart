@@ -23,6 +23,8 @@ class _CreateAccountState extends State<CreateAccount> {
       TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+  bool _showPassword = false;
+  bool _showConfirmPassword = false;
 
   @override
   void dispose() {
@@ -93,7 +95,6 @@ class _CreateAccountState extends State<CreateAccount> {
                     CustomTextFeilds(
                       hintText: "Enter Full Name",
                       controller: fullNameController,
-                      showPassowrd: false,
                       isEmail: false,
                       iconData: Icons.email_outlined,
                     ),
@@ -101,7 +102,6 @@ class _CreateAccountState extends State<CreateAccount> {
                     CustomTextFeilds(
                       hintText: "Enter Email",
                       controller: emailOrPhoneController,
-                      showPassowrd: false,
                       isEmail: true,
                       iconData: Icons.email_outlined,
                     ),
@@ -109,15 +109,27 @@ class _CreateAccountState extends State<CreateAccount> {
                     CustomTextFeilds(
                       hintText: "Enter Password",
                       controller: passwordController,
-                      showPassowrd: false,
+                      showPassword: _showPassword,
+                      ispassword: true,
                       iconData: Icons.lock_outline,
+                      onPasswordVisibilityToggle: () {
+                        setState(() {
+                          _showPassword = !_showPassword;
+                        });
+                      },
                     ),
                     SizedBox(height: 20),
                     CustomTextFeilds(
                       hintText: "Enter Confirm Password",
                       controller: confirmPasswordController,
-                      showPassowrd: false,
+                      showPassword: _showConfirmPassword,
+                      ispassword: true,
                       iconData: Icons.lock_outline,
+                      onPasswordVisibilityToggle: () {
+                        setState(() {
+                          _showConfirmPassword = !_showConfirmPassword;
+                        });
+                      },
                     ),
                     SizedBox(height: 20),
                     GetBuilder<UserController>(

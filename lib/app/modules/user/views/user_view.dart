@@ -4,7 +4,6 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:note_keeper/app/components/custom_btn.dart';
 import 'package:note_keeper/app/utils/events/user_events.dart';
-import 'package:page_transition/page_transition.dart';
 
 import '../../../components/custom_textfeild.dart';
 import '../../../routes/app_pages.dart';
@@ -24,6 +23,7 @@ class _UserViewState extends State<UserView> {
   final TextEditingController passwordController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+  bool _showPassword = false;
 
   @override
   void dispose() {
@@ -85,7 +85,6 @@ class _UserViewState extends State<UserView> {
                     CustomTextFeilds(
                       hintText: "Enter Email",
                       controller: emailOrPhoneController,
-                      showPassowrd: false,
                       isEmail: true,
                       iconData: Icons.email_outlined,
                     ),
@@ -93,8 +92,14 @@ class _UserViewState extends State<UserView> {
                     CustomTextFeilds(
                       hintText: "Enter Password",
                       controller: passwordController,
-                      showPassowrd: false,
+                      showPassword: _showPassword,
+                      ispassword: true,
                       iconData: Icons.lock_outline,
+                      onPasswordVisibilityToggle: () {
+                        setState(() {
+                          _showPassword = !_showPassword;
+                        });
+                      },
                     ),
                     SizedBox(height: 20),
                     GetBuilder<UserController>(

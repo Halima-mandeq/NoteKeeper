@@ -4,10 +4,18 @@ import 'package:note_keeper/app/modules/home/model/notes_model.dart';
 import '../utils/exports.dart';
 
 class NoteCard extends StatelessWidget {
-  const NoteCard({super.key, required this.note, required this.accentColor});
+  const NoteCard({
+    super.key,
+    required this.note,
+    required this.accentColor,
+    this.onEdit,
+    this.onDelete,
+  });
 
   final NotesModel note;
   final Color accentColor;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +132,63 @@ class NoteCard extends StatelessWidget {
               }).toList(),
             ),
           ],
+          const SizedBox(height: NSizes.md),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Wrap(
+              alignment: WrapAlignment.end,
+              spacing: NSizes.sm,
+              runSpacing: NSizes.sm,
+              children: [
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: accentColor,
+                    backgroundColor: accentColor.withValues(alpha: 0.1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: NSizes.sm,
+                      vertical: NSizes.xs,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(NSizes.cardRadiusSm),
+                    ),
+                  ),
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_rounded, size: NSizes.iconSm),
+                  label: Text(
+                    'Edit',
+                    style: style(
+                      fontSize: NSizes.fontSizeSm,
+                      color: accentColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: NAppColor.kCheckOutActiveTextColor,
+                    backgroundColor: NAppColor.kCheckOutInActiveBgColor,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: NSizes.sm,
+                      vertical: NSizes.xs,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(NSizes.cardRadiusSm),
+                    ),
+                  ),
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_rounded, size: NSizes.iconSm),
+                  label: Text(
+                    'Delete',
+                    style: style(
+                      fontSize: NSizes.fontSizeSm,
+                      color: NAppColor.kCheckOutActiveTextColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

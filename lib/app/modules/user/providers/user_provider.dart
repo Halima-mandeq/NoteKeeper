@@ -100,7 +100,7 @@ class UserProvider extends GetConnect {
     await box.remove(kUserToken);
     await box.write(kUserToken, token);
 
-    log("Token Saved ${token}");
+    log("Token Saved $token");
   }
 
   // Clear user data and token from local storage

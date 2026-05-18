@@ -35,8 +35,7 @@ class OnboardingController extends GetxController {
 
   // onDotClicked
 
-  onDotClicked(int index) {
-    print("Clicked on dot: $index");
+  void onDotClicked(int index) {
     currentPage = index;
     pageController.animateToPage(
       index,
@@ -54,10 +53,5 @@ class OnboardingController extends GetxController {
       curve: Curves.easeInOut,
     );
     update();
-  }
-
-  @override
-  void onInit() {
-    super.onInit();
   }
 }

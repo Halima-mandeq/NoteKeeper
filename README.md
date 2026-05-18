@@ -1,195 +1,139 @@
 # NoteKeeper
 
-A modern Flutter note-taking application with onboarding, authentication, remote note fetching, search, and note statistics.
+NoteKeeper is a Flutter note-taking app built with GetX. It includes onboarding, user authentication, remote note storage, search, note statistics, and full note create/edit/delete flows.
 
-## Overview
+## Repository
 
-NoteKeeper is built with Flutter and GetX. It connects to a remote backend service to authenticate users and fetch notes, then displays them in a polished mobile interface.
+[Halima-mandeq/NoteKeeper](https://github.com/Halima-mandeq/NoteKeeper.git)
 
-The app includes:
+## Features
 
-- Onboarding flow for first-time users
-- Email/password authentication
-- Notes dashboard with search and statistics
-- Remote data fetching from a REST API
-- Local persistence for onboarding and user session using GetStorage
+- Onboarding screens for first-time users
+- Email and password login
+- Account creation
+- Persistent user session with GetStorage
+- Notes dashboard with total, pinned, and unpinned counts
+- Search notes by title, content, or tag
+- Create notes with title, content, tags, and pinned status
+- Edit existing notes
+- Delete notes with confirmation
+- Logout with yes/no confirmation
+- Pull-to-refresh and refresh button
+- Toast feedback for successful actions and errors
 
-## Key Features
+## Tech Stack
 
-- **Onboarding screens** to introduce the app experience
-- **User authentication** with login and account creation
-- **Notes list** with support for search and pinned note display
-- **Note statistics** showing total, pinned, and unpinned notes
-- **Refresh control** and responsive layout for mobile
-- **Snackbar/toast notifications** for user feedback
+- Flutter
+- Dart
+- GetX for routing and state management
+- GetStorage for local session storage
+- HTTP package for REST API requests
+- Fluttertoast for user feedback
 
-## CRUD Notes Support
+## API
 
-### Current implementation
+The app connects to this backend:
 
-The application currently implements the following remote note operations through the backend API:
+```text
+https://notes-backend-bootcamp.vercel.app/api/v1/
+```
 
-- **Read**: Fetch all notes from the API (`GET /notes`)
-- **Read**: Fetch note statistics (`GET /notes/stats`)
+The base URL is configured in:
 
-### Planned / scaffolded operations
+```text
+lib/app/utils/api_constants.dart
+```
 
-The code contains UI placeholders and controller state for full CRUD support, including:
+### Auth Endpoints
 
-- **Create note** (floating add button is present in the UI)
-- **Update note** (note card tap handler is scaffolded)
-- **Delete note** (not yet wired in the UI)
+- `POST auth/users/signup` - create a user account
+- `POST auth/users/login` - login and receive a token
 
-Those flows can be completed by adding the corresponding API calls and UI screens for note creation, editing, and deletion.
+### Notes Endpoints
 
-## Architecture
+- `GET notes` - get all notes for the logged-in user
+- `GET notes/stats` - get note statistics
+- `POST notes` - create a note
+- `PATCH notes/<note-id>` - update a note
+- `DELETE notes/<note-id>` - delete a note
 
-The app follows a modular GetX architecture:
-
-- `lib/main.dart` - application entry point and route initialization
-- `lib/app/routes/app_pages.dart` - app navigation routes
-- `lib/app/modules/onboarding` - onboarding flow and controller
-- `lib/app/modules/user` - authentication screens, provider, model, controller
-- `lib/app/modules/home` - notes dashboard, data provider, models, controller
-- `lib/app/components` - shared UI components like cards, forms, buttons, and messages
-- `lib/app/utils` - constants, helper functions, shared exports
-
-## API Configuration
-
-The backend service is configured in `lib/app/utils/api_constants.dart`:
-
-- Base URL: `https://notes-backend-bootcamp.vercel.app/api/v1/`
-
-### Auth endpoints
-
-- `POST auth/users/signup` - create account
-- `POST auth/users/login` - sign in
-
-### Notes endpoints
-
-- `GET notes` - retrieve current user notes
-- `GET notes/stats` - retrieve notes summary statistics
+Protected note requests use the saved JWT token as a bearer token.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Flutter SDK `>=3.11.4`
-- Dart SDK matching Flutter SDK
-- An Android/iOS emulator or physical device
+- Flutter SDK
+- Dart SDK `>=3.9.0 <4.0.0`
+- Android Studio, VS Code, or another Flutter-ready editor
+- Android emulator, iOS simulator, or physical device
 
-### Run locally
-
-1. Open the project in VS Code or Android Studio.
-2. Run dependency installation:
+### Install Dependencies
 
 ```bash
 flutter pub get
 ```
 
-3. Start the app:
+### Run The App
 
 ```bash
 flutter run
 ```
 
-## Project structure
+### Analyze The Project
 
-The app is organized into feature modules and shared utilities.
-
+```bash
+flutter analyze
 ```
+
+## Project Structure
+
+```text
 lib/
-├─ main.dart
-├─ app/
-│  ├─ routes/
-│  │  ├─ app_pages.dart
-│  │  └─ app_routes.dart
-│  ├─ modules/
-│  │  ├─ onboarding/
-│  │  │  ├─ bindings/
-│  │  │  ├─ controllers/
-│  │  │  ├─ views/
-│  │  │  └─ widgets/
-│  │  ├─ user/
-│  │  │  ├─ bindings/
-│  │  │  ├─ controllers/
-│  │  │  ├─ model/
-│  │  │  ├─ providers/
-│  │  │  └─ views/
-│  │  └─ home/
-│  │     ├─ bindings/
-│  │     ├─ controllers/
-│  │     ├─ model/
-│  │     ├─ providers/
-│  │     └─ views/
-│  ├─ components/
-│  └─ utils/
+|-- main.dart
+`-- app/
+    |-- components/
+    |-- modules/
+    |   |-- home/
+    |   |-- onboarding/
+    |   `-- user/
+    |-- routes/
+    `-- utils/
 ```
 
-- `lib/main.dart` - app bootstrap and initial route selection
-- `lib/app/routes/app_pages.dart` - route definitions for onboarding, auth, and home
-- `lib/app/modules/onboarding` - onboarding pages and controller
-- `lib/app/modules/user` - login/signup flow and local user storage
-- `lib/app/modules/home` - notes dashboard, note model, statistics, and data provider
-- `lib/app/components` - reusable widgets for cards, text fields, buttons, and messages
-- `lib/app/utils` - shared constants, helpers, and navigation utilities
+Important files:
 
-## Notes for Developers
+- `lib/main.dart` - app bootstrap and initial route setup
+- `lib/app/routes/app_pages.dart` - GetX route definitions
+- `lib/app/modules/onboarding/` - onboarding flow
+- `lib/app/modules/user/` - login, signup, session storage, and logout
+- `lib/app/modules/home/` - notes dashboard, CRUD logic, statistics, and API provider
+- `lib/app/components/notes_card.dart` - note card UI with edit and delete actions
+- `lib/app/utils/api_constants.dart` - API URL, storage keys, shared helpers, and date formatting
 
-- The sign-in screen is implemented in `lib/app/modules/user/views/user_view.dart`
-- Account creation is implemented in `lib/app/modules/user/views/create_account.dart`
-- Notes are displayed in `lib/app/modules/home/views/home_view.dart`
-- `lib/app/modules/home/providers/home_provider.dart` handles API requests for notes
-- `lib/app/modules/user/providers/user_provider.dart` handles authentication and token storage
+## Notes Workflow
+
+1. Create an account or log in.
+2. View note statistics at the top of the home screen.
+3. Tap the add button to create a note.
+4. Use the search field to filter notes.
+5. Use `Edit` on a note card to update the note.
+6. Use `Delete` on a note card to remove it after confirmation.
+7. Tap logout and choose `Yes` to end the session.
+
+## Postman Collection
+
+A Postman collection for user requests is included here:
+
+```text
+docs/postman/NoteKeeper-Users.postman_collection.json
+```
+
+Import it into Postman, run `Login User`, then use the saved token for protected requests.
 
 ## Future Improvements
 
-- Enable full note creation, editing, and deletion UI flows
-- Add note detail and edit screens
-- Support offline note editing and local caching
-- Improve error handling and offline experience
-- Add theme / dark mode support
-
-## Assignment
-
-### Password Visibility Toggle
-
-Implement functionality to hide and show password text in the password input fields for both the user login screen (`lib/app/modules/user/views/user_view.dart`) and the account creation screen (`lib/app/modules/user/views/create_account.dart`).
-
-**Requirements:**
-
-- Add an eye icon button to toggle password visibility
-- Use the existing `CustomTextFeilds` component or modify it to support password visibility toggle
-- Ensure the toggle works for both login and signup forms
-- Maintain consistent UI styling with the rest of the app
-
-**Steps:**
-
-1. Update the `CustomTextFeilds` component to accept a `showPassword` parameter and visibility toggle callback
-2. Add an `IconButton` with eye/eye-off icons to the password fields
-3. Implement state management to toggle password visibility
-4. Test the functionality on both login and create account screens
-
-## Resources
-
-### Packages used in `pubspec.yaml`
-
-- [cupertino_icons](https://pub.dev/packages/cupertino_icons)
-- [get](https://pub.dev/packages/get)
-- [page_transition](https://pub.dev/packages/page_transition)
-- [fluttertoast](https://pub.dev/packages/fluttertoast)
-- [get_storage](https://pub.dev/packages/get_storage)
-- [smooth_page_indicator](https://pub.dev/packages/smooth_page_indicator)
-- [loading_animation_widget](https://pub.dev/packages/loading_animation_widget)
-- [gap](https://pub.dev/packages/gap)
-- [http](https://pub.dev/packages/http)
-- [after_layout](https://pub.dev/packages/after_layout)
-
-### Dev packages
-
-- [flutter_test](https://pub.dev/packages/flutter_test)
-- [flutter_lints](https://pub.dev/packages/flutter_lints)
-
-## Contact
-
-For questions or contributions, open an issue or pull request in this repository.
+- Add offline note caching
+- Add a dedicated note details screen
+- Add dark mode support
+- Add automated widget tests for note creation, editing, and deletion

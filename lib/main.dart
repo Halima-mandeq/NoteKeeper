@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:note_keeper/app/utils/api_constants.dart';
 import 'package:note_keeper/app/utils/exports.dart';
 
 import 'app/routes/app_pages.dart';
@@ -22,7 +21,7 @@ void main() async {
       initialRoute: !isIntro
           ? Routes.ONBOARDING
           : box.hasData(kUserInfo)
-          ? AppPages.INITIAL
+          ? AppPages.initial
           : Routes.USER,
       getPages: AppPages.routes,
 

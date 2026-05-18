@@ -91,8 +91,12 @@ class UserController extends GetxController {
     }
   }
 
-  @override
-  void onInit() {
-    super.onInit();
+  Future<void> logout({required Function() onSuccess}) async {
+    await UserProvider().clearUserData();
+    user = UserModel();
+    userState = UserState.intial;
+    registrationState = RegistrationState.intial;
+    update();
+    onSuccess();
   }
 }
