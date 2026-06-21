@@ -2,9 +2,6 @@
 
 NoteKeeper is a Flutter note-taking app built with GetX. It includes onboarding, user authentication, remote note storage, search, note statistics, and full note create/edit/delete flows.
 
-## Repository
-
-[Halima-mandeq/NoteKeeper](https://github.com/Halima-mandeq/NoteKeeper.git)
 
 ## Features
 
@@ -29,37 +26,6 @@ NoteKeeper is a Flutter note-taking app built with GetX. It includes onboarding,
 - GetStorage for local session storage
 - HTTP package for REST API requests
 - Fluttertoast for user feedback
-
-## API
-
-The app connects to this backend:
-
-```text
-https://notes-backend-bootcamp.vercel.app/api/v1/
-```
-
-The base URL is configured in:
-
-```text
-lib/app/utils/api_constants.dart
-```
-
-### Auth Endpoints
-
-- `POST auth/users/signup` - create a user account
-- `POST auth/users/login` - login and receive a token
-
-### Notes Endpoints
-
-- `GET notes` - get all notes for the logged-in user
-- `GET notes/stats` - get note statistics
-- `POST notes` - create a note
-- `PATCH notes/<note-id>` - update a note
-- `DELETE notes/<note-id>` - delete a note
-
-Protected note requests use the saved JWT token as a bearer token.
-
-## Getting Started
 
 ### Prerequisites
 
